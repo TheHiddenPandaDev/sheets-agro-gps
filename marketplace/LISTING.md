@@ -12,7 +12,7 @@ Everything the Marketplace SDK "Store listing" and "App configuration" pages ask
 | Developer email / support email | soporte@agrogps.eu |
 | Category | Business tools (alternative: Productivity) |
 | Pricing | Free |
-| Terms of service URL | https://agrogps.eu/en/legal-notice/ (check the live English legal-notice path before pasting) |
+| Terms of service URL | https://agrogps.eu/en/legal/ |
 | Privacy policy URL | https://agrogps.eu/en/privacy/#google-sheets-add-on |
 | Support URL | https://agrogps.eu/en/ |
 | Source code ("Report an issue") | https://github.com/TheHiddenPandaDev/sheets-agro-gps/issues |
