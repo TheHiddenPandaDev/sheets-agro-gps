@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<style>
+  body { font-family: Arial, sans-serif; font-size: 13px; color: #1f2a1f; margin: 12px; }
+  h1 { font-size: 16px; color: #2f6b2f; margin: 0 0 8px; }
+  h2 { font-size: 13px; margin: 16px 0 6px; }
+  label { display: block; margin: 8px 0 2px; font-weight: bold; }
+  input { width: 100%; box-sizing: border-box; padding: 6px; border: 1px solid #b9c7b9; border-radius: 4px; }
+  button { margin-top: 8px; padding: 6px 12px; background: #2f6b2f; color: #fff; border: 0; border-radius: 4px; cursor: pointer; }
+  button.secondary { background: #e8efe8; color: #1f2a1f; }
+  .error { color: #a12a1a; margin-top: 8px; }
+  .card { border: 1px solid #dfe7df; border-radius: 6px; padding: 8px; margin-top: 8px; }
+  .muted { color: #5b6b5b; font-size: 12px; }
+  ul { padding-left: 16px; }
+  li { margin-bottom: 4px; }
+  a { color: #2f6b2f; }
+</style>
+</head>
+<body>
+<h1 id="title"></h1>
+<p id="intro" class="muted"></p>
+<h2 id="lookupTitle"></h2>
+<label id="registrationLabel" for="registration"></label>
+<input id="registration" autocomplete="off">
+<label id="countryLabel" for="country"></label>
+<input id="country" value="ES" maxlength="2">
+<button id="lookup"></button>
+<label id="searchLabel" for="term"></label>
+<input id="term" autocomplete="off">
+<button id="search" class="secondary"></button>
+<div id="result"></div>
+<h2 id="helpTitle"></h2>
+<ul>
+  <li id="helpProduct"></li>
+  <li id="helpConditions"></li>
+  <li id="helpSearch"></li>
+</ul>
+<p id="helpNote" class="muted"></p>
+<p><a id="site" target="_blank" rel="noopener"></a></p>
+<script>
+  var S = {};
+  function text(id, value) { document.getElementById(id).textContent = value; }
+  function el(tag, value, cls) {
+    var node = document.createElement(tag);
+    if (value !== undefined) node.textContent = value;
+    if (cls) node.className = cls;
+    return node;
+  }
+  function render(model) {
+    S = model.strings;
+    ['intro', 'lookupTitle', 'registrationLabel', 'countryLabel', 'searchLabel', 'helpTitle', 'helpProduct',
+      'helpConditions', 'helpSearch', 'helpNote'].forEach(function (id) { text(id, S[id]); });
+    text('title', S.sidebarTitle);
+    text('lookup', S.lookupButton);
+    text('search', S.searchButton);
+    var site = document.getElementById('site');
+    site.href = model.siteUrl;
+    site.textContent = S.getApp;
+  }
+  function showError(message) {
+    var box = document.getElementById('result');
+    box.innerHTML = '';
+    box.appendChild(el('p', message, 'error'));
+  }
+  function showProduct(data) {
+    if (data.error) return showError(data.error);
+    var box = document.getElementById('result');
+    box.innerHTML = '';
+    var card = el('div', undefined, 'card');
+    card.appendChild(el('strong', data.product[0]));
+    card.appendChild(el('div', [data.product[5], data.product[1]].filter(Boolean).join(' · '), 'muted'));
+    card.appendChild(el('div', data.product[3]));
+    var list = el('ul');
+    data.uses.slice(0, 30).forEach(function (u) {
+      list.appendChild(el('li', [u[0], u[1], u[2], u[3] === '' ? '' : u[3] + ' d'].filter(Boolean).join(' · ')));
+    });
+    card.appendChild(list);
+    box.appendChild(card);
+  }
+  function showMatches(data) {
+    if (data.error) return showError(data.error);
+    var box = document.getElementById('result');
+    box.innerHTML = '';
+    var list = el('ul');
+    data.matches.forEach(function (m) { list.appendChild(el('li', m.filter(Boolean).join(' · '))); });
+    box.appendChild(list);
+  }
+  document.getElementById('lookup').addEventListener('click', function () {
+    google.script.run.withSuccessHandler(showProduct).withFailureHandler(function (e) { showError(e.message); })
+      .agroSidebarLookup(document.getElementById('registration').value, document.getElementById('country').value);
+  });
+  document.getElementById('search').addEventListener('click', function () {
+    google.script.run.withSuccessHandler(showMatches).withFailureHandler(function (e) { showError(e.message); })
+      .agroSidebarSearch(document.getElementById('term').value, document.getElementById('country').value);
+  });
+  google.script.run.withSuccessHandler(render).agroSidebarModel();
+</script>
+</body>
+</html>
